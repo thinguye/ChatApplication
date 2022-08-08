@@ -2,8 +2,6 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,7 +14,6 @@ import main.services.UserService;
 import main.services.interfaces.GroupServiceInterface;
 import main.services.interfaces.UserServiceInterface;
 import main.models.groups.Group;
-import main.models.messages.Message;
 import main.models.users.User;
 
 class GroupServiceTest {
@@ -27,9 +24,9 @@ class GroupServiceTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		dataStorage = DataStorage.getData();
-		userService.createNewUser("Son", "Goku", "thinguyen", "123456789", "Male", "11031999");
-		userService.createNewUser("Uzimaki", "Naruto", "vupham", "999999999", "Male", "13031999");
-		userService.createNewUser("Dragon.D", "Luffy", "bobungbu", "000000000", "Female", "09081999");
+		userService.createNewUser("Thi", "Nguyen", "thinguyen", "123456789", "Male", "11031999");
+		userService.createNewUser("Vu", "Pham", "vupham", "12345678", "Male", "13031999");
+		userService.createNewUser("Bo", "Tran", "bobungbu", "123456780", "Female", "09081999");
 		groupService.createGroup(GroupType.PRIVATE, "user0");
 		groupService.createGroup(GroupType.PUBLIC, "user0");
 		groupService.createGroup(GroupType.PRIVATE, "user1");
@@ -75,10 +72,10 @@ class GroupServiceTest {
 	}
 
 	@ParameterizedTest(name = "groupId = {0}, userName = {1}, expected = {2}")
-	@CsvSource({"group0, thinguyen, true", "group0, bobungbu, false " , "group09090, thinguyen, false"})
+	@CsvSource({"group0, thinguyen, true", "group0, bobungbu, false" , "group10, thinguyen, false"})
 	public void checkAdminPrivateGroupTest(String groupId, String userName, boolean expected) {
-		User user1 = userService.getUserByUsername(userName);
-		assertEquals(expected, groupService.checkMemberGroup(user1.getId(), groupId));
+		User user = userService.getUserByUsername(userName);
+		assertEquals(expected, groupService.checkMemberGroup(user.getId(), groupId));
 	}
 
 	@Test

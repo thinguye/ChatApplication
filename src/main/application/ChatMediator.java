@@ -1,21 +1,18 @@
 package main.application;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Scanner;
 
-import main.data.DataStorage;
 import main.models.enums.GroupType;
 import main.models.groups.Group;
 import main.models.messages.Message;
 import main.models.users.User;
+import main.repositories.Repository;
+import main.repositories.interfaces.RepositoryInterface;
 import main.services.GroupService;
 import main.services.MessageService;
 import main.services.UserService;
@@ -24,7 +21,7 @@ import main.services.interfaces.MessageServiceInterface;
 import main.services.interfaces.UserServiceInterface;
 
 public class ChatMediator {
-	private DataStorage dataStorage;
+	private RepositoryInterface repositoryInterface;
 	private Scanner scanner = new Scanner(System.in);
 	private GroupServiceInterface groupService;
 	private UserServiceInterface userService;
@@ -32,7 +29,7 @@ public class ChatMediator {
 	private User currentUser;
 
 	public ChatMediator() throws NoSuchAlgorithmException, NoSuchProviderException {
-		dataStorage = DataStorage.getData();
+		repositoryInterface = new Repository();
 		groupService = new GroupService();
 		userService = new UserService();
 		userService.createNewUser("Thi", "Nguyen", "thinguyen", "12345678", "Female", "24032000");
@@ -54,10 +51,10 @@ public class ChatMediator {
 
 	private void getUserInterface() {
 		String userInterface;
-		userInterface = "######################## \n";
+		userInterface = "----------------------- \n";
 		userInterface += "1. Login \n";
 		userInterface += "2. Register \n";
-		userInterface += "####################### \n";
+		userInterface += "----------------------- \n";
 		userInterface += "Your choice: ";
 		System.out.print(userInterface);
 	}
@@ -77,7 +74,7 @@ public class ChatMediator {
 			default:
 				System.out.println("Wrong input");
 			}
-		} while (choice != 2);
+		} while (choice >= 2);
 	}
 
 	private void doRegister() throws NoSuchAlgorithmException, NoSuchProviderException {
@@ -98,11 +95,11 @@ public class ChatMediator {
 		dateOfBirth = scanner.next().trim();
 
 		String userInterface;
-		userInterface = "######################## \n";
+		userInterface = "----------------------- \n";
 		userInterface += "1. Register \n";
 		userInterface += "2. Return to Login \n";
 		userInterface += "3. Cancel \n";
-		userInterface += "####################### \n";
+		userInterface += "----------------------- \n";
 		userInterface += "Your choice: ";
 		System.out.print(userInterface);
 		int choice;
@@ -136,10 +133,10 @@ public class ChatMediator {
 		String password = scanner.next().trim();
 
 		String userInterface;
-		userInterface = "######################## \n";
+		userInterface = "----------------------- \n";
 		userInterface += "1. Login \n";
 		userInterface += "2. Cancel \n";
-		userInterface += "####################### \n";
+		userInterface += "----------------------- \n";
 		userInterface += "Your choice: ";
 		System.out.print(userInterface);
 		int choice;
@@ -165,11 +162,11 @@ public class ChatMediator {
 
 	private void doChooseMode() throws NoSuchAlgorithmException, NoSuchProviderException {
 		String userInterface;
-		userInterface = "######################## \n";
+		userInterface = "----------------------- \n";
 		userInterface += "1. One To One \n";
-		userInterface += "2. Group \n";
+		userInterface += "2. Group Chat\n";
 		userInterface += "3. Logout \n";
-		userInterface += "####################### \n";
+		userInterface += "----------------------- \n";
 		userInterface += "Your choice: ";
 		System.out.print(userInterface);
 
@@ -193,17 +190,19 @@ public class ChatMediator {
 		} while (choice != 3);
 	}
 
-	private void doChooseGroup() {
-		List<Group> groups = dataStorage.getGroupList();
+	private void doChooseGroup() throws NoSuchAlgorithmException, NoSuchProviderException {
+		List<Group> groups = repositoryInterface.getGroupList();
 		Map<Integer, String> groupMap = new HashMap<>();
 		int index = 1;
-		String userInterface = "############### \n";
+		String userInterface = "----------------------- \n";
 		for (Group group : groups) {
 			userInterface += index + ". " + group.getId() + " " + group.getGroupType() + "\n";
 			groupMap.put(index, group.getId());
 			index++;
 		}
 		userInterface += index + ". Create group\n";
+		userInterface += index + 1 + ". Return\n";
+		userInterface += "----------------------- \n";
 		userInterface += "Your choice: ";
 		System.out.print(userInterface);
 		int choice;
@@ -211,44 +210,154 @@ public class ChatMediator {
 		do {
 			choice = scanner.nextInt();
 			if (groupMap.containsKey(choice)) {
-				doGroupChat();
-			} else if (choice == groupMap.size()) {
+				doGroupChat(groupMap.get(choice), currentUser.getId());
+			} else if (choice == groupMap.size() + 1) {
 				doCreateGroup();
+			} else if (choice == groupMap.size() + 2) {
+				doChooseMode();
 			}
-		} while (choice != groupMap.size() || choice <= 0);
+		} while (choice != groupMap.size() + 2);
 	}
 
-	private void doGroupChat() {
-
-	}
-
-	private void doCreateGroup() {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void doChooseUser() {
-		Map<Integer, String> userMap = getUserList();
-		int choice;
-		do {
-			choice = scanner.nextInt();
-			if (userMap.containsKey(choice)) {
-				doChat(currentUser.getId(), userMap.get(choice));
-			} else {
-				System.out.println("Wrong input");
-			}
-		} while (choice >= userMap.size());
-
-	}
-
-	private void doChat(String senderId, String receiverId) {
-		List<Message> messages = messageService.showAllMessageUser(senderId, receiverId);
-		String messageInterface = "--------------------------\n";
+	private void doGroupChat(String groupId, String userId) throws NoSuchAlgorithmException, NoSuchProviderException {
+		List<Message> messages = messageService.showAllMessageGroup(groupId, userId);
+		String messageInterface = "----------------------- \n";
 		for (Message message : messages) {
 			messageInterface += userService.getUserByUserId(message.getSenderId()).getUsername() + ": "
 					+ message.getContent() + "\n";
 		}
-		messageInterface += "--------------------------\n1. Type message\t2. Send file";
+		messageInterface += "----------------------- \n1. Type message\t2. Send file\t3. Add member\t4. Return";
+		System.out.println(messageInterface);
+		int choice;
+		do {
+			choice = scanner.nextInt();
+			switch (choice) {
+			case 1:
+				doSendMessageInGroupChat(groupId, userId);
+				break;
+			case 2:
+				doSendFileInGroupChat(groupId, userId);
+				break;
+			case 3:
+				doAddMember(userId, groupId);
+			case 4:
+				doChooseGroup();
+				break;
+			default:
+				System.out.println("Wrong input!");
+				doGroupChat(groupId, userId);
+				break;
+			}
+		} while (choice != 2);
+
+	}
+
+	private void doAddMember(String inviterId, String groupId) throws NoSuchAlgorithmException, NoSuchProviderException {
+		Map<Integer, String> userMap = getUserList();
+		System.out.println(userMap.size() + 1 + ". Return");
+		System.out.println("-----------------------");
+		System.out.print("Your choice: ");
+		int choice;
+		do {
+			choice = scanner.nextInt();
+			if (userMap.containsKey(choice)) {
+				if(groupService.addMember(inviterId, userMap.get(choice), groupId)) {
+					System.out.println("Successfully!");
+				}else {
+					System.out.println("Unsucessfully!");
+				}
+				doGroupChat(groupId, inviterId);
+			} else if (choice == userMap.size() + 1) {
+				doGroupChat(groupId, inviterId);
+			}
+		} while (choice >= userMap.size() + 1);
+
+		
+	}
+
+	private void doSendFileInGroupChat(String groupId, String userId)
+			throws NoSuchAlgorithmException, NoSuchProviderException {
+		boolean isSuccessful = false;
+		String filename, filepath;
+		while (!isSuccessful) {
+			System.out.println("Input your file");
+			System.out.print("Filename: ");
+			filename = scanner.next();
+			System.out.println();
+			System.out.print("Filepath: ");
+			filepath = scanner.next();
+			messageService.sendFileToGroup(filename, filepath, userId, userId);
+			isSuccessful = true;
+			System.out.println("Successfully!");
+		}
+		doGroupChat(groupId, userId);
+	}
+
+	private void doSendMessageInGroupChat(String groupId, String userId)
+			throws NoSuchAlgorithmException, NoSuchProviderException {
+		boolean isSuccessful = false;
+		System.out.print("Enter your message: ");
+		while (!isSuccessful) {
+			String contentMessage = scanner.nextLine();
+			if (!contentMessage.equals("")) {
+				messageService.sendMessageToGroup(userId, groupId, contentMessage);
+				isSuccessful = true;
+				System.out.println("Succesfully!");
+			}
+		}
+		doGroupChat(groupId, userId);
+	}
+
+	private void doCreateGroup() throws NoSuchAlgorithmException, NoSuchProviderException {
+		String groupInterface = "----------------------- \n";
+		groupInterface += "1. Public Group\n2. Private Group\n";
+		groupInterface += "----------------------- \n";
+		groupInterface += "Your choice: ";
+		System.out.println(groupInterface);
+		int choice;
+		do {
+			choice = scanner.nextInt();
+			switch (choice) {
+			case 1:
+				groupService.createGroup(GroupType.PUBLIC, currentUser.getId());
+				doChooseGroup();
+				break;
+			case 2:
+				groupService.createGroup(GroupType.PRIVATE, currentUser.getId());
+				doChooseGroup();
+				break;
+			default:
+				System.out.println("Wrong input!");
+				doCreateGroup();
+				break;
+			}
+		} while (choice >= 2);
+	}
+
+	private void doChooseUser() throws NoSuchAlgorithmException, NoSuchProviderException {
+		Map<Integer, String> userMap = getUserList();
+		System.out.println(userMap.size() + 1 + ". Return");
+		int choice;
+		do {
+			choice = scanner.nextInt();
+			if (userMap.containsKey(choice)) {
+				doUserChat(currentUser.getId(), userMap.get(choice));
+			} else if (choice == userMap.size() + 1) {
+				doChooseMode();
+			}
+		} while (choice >= userMap.size() + 1);
+
+	}
+
+	private void doUserChat(String senderId, String receiverId)
+			throws NoSuchAlgorithmException, NoSuchProviderException {
+		List<Message> messages = messageService.showAllMessageUser(senderId, receiverId);
+		String messageInterface = "----------------------- \n";
+		for (Message message : messages) {
+			messageInterface += userService.getUserByUserId(message.getSenderId()).getUsername() + ": "
+					+ message.getContent() + "\n";
+		}
+		messageInterface += "----------------------- \n1. Type message\t2. Send file\t3. Return";
 		System.out.println(messageInterface);
 		int choice;
 		do {
@@ -260,14 +369,19 @@ public class ChatMediator {
 			case 2:
 				doSendFileInPersonChat(senderId, receiverId);
 				break;
+			case 3:
+				doChooseUser();
+				break;
 			default:
+				System.out.println("Wrong input!");
 				break;
 			}
 		} while (choice != 2);
 
 	}
 
-	private void doSendFileInPersonChat(String senderId, String receiverId) {
+	private void doSendFileInPersonChat(String senderId, String receiverId)
+			throws NoSuchAlgorithmException, NoSuchProviderException {
 		boolean isSuccessful = false;
 		String filename, filepath;
 		while (!isSuccessful) {
@@ -281,10 +395,11 @@ public class ChatMediator {
 			isSuccessful = true;
 			System.out.println("Successfully!");
 		}
-		doChat(senderId, receiverId);
+		doUserChat(senderId, receiverId);
 	}
 
-	private void doSendMessageInPersonChat(String senderId, String receiverId) {
+	private void doSendMessageInPersonChat(String senderId, String receiverId)
+			throws NoSuchAlgorithmException, NoSuchProviderException {
 		boolean isSuccessful = false;
 		System.out.print("Enter your message: ");
 		while (!isSuccessful) {
@@ -295,14 +410,14 @@ public class ChatMediator {
 				System.out.println("Succesfully!");
 			}
 		}
-		doChat(senderId, receiverId);
+		doUserChat(senderId, receiverId);
 	}
 
 	private Map<Integer, String> getUserList() {
-		List<User> users = dataStorage.getUserList();
+		List<User> users = repositoryInterface.getUserList();
 		Map<Integer, String> userMap = new HashMap<>();
 		int index = 1;
-		String userInterface = "################ \n";
+		String userInterface = "------------------------ \n";
 		for (User user : users) {
 			if (!user.getUsername().equals(currentUser.getUsername())) {
 				userInterface += index + ". " + user.getUsername() + "\n";
@@ -315,29 +430,6 @@ public class ChatMediator {
 	}
 
 	private void doLogout() throws NoSuchAlgorithmException, NoSuchProviderException {
-		String userInterface = "Do you want to log out? \n";
-		userInterface += "---------------------- \n";
-		userInterface += "1. Yes \n";
-		userInterface += "2. No \n";
-		userInterface += "---------------------- \n";
-		userInterface += "Your choice: ";
-		System.out.print(userInterface);
-
-		int choice;
-
-		do {
-			choice = scanner.nextInt();
-
-			switch (choice) {
-			case 1:
-				doTask();
-				break;
-			case 2:
-				break;
-			default:
-				break;
-			}
-		} while (choice != 2);
+		doTask();
 	}
-
 }

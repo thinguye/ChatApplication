@@ -13,9 +13,9 @@ public class PreCreateUser {
 		this.lastName = lastName;
 		this.firstName = firstName;
 		this.username = username;
-		if (gender.equals("Male")) {
+		if (gender.equalsIgnoreCase("Male")) {
 			this.gender = GenderType.MALE;
-		} else if (gender.equals("Female")) {
+		} else if (gender.equalsIgnoreCase("Female")) {
 			this.gender = GenderType.FEMALE;
 		} else {
 			this.gender = GenderType.OTHER;

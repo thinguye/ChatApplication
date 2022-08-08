@@ -10,8 +10,6 @@ import main.services.interfaces.UserServiceInterface;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
-import main.data.DataStorage;
-
 public class UserService implements UserServiceInterface {
 	RepositoryInterface repositoryInterface;
 

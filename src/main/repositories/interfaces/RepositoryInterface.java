@@ -4,7 +4,6 @@ import java.util.List;
 
 import main.models.files.File;
 import main.models.groups.Group;
-import main.models.groups.PrivateGroup;
 import main.models.messages.Message;
 import main.models.users.User;
 

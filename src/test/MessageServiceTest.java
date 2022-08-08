@@ -26,17 +26,17 @@ class MessageServiceTest {
 	UserServiceInterface userService = new UserService();
 	GroupServiceInterface groupService = new GroupService();
 	MessageServiceInterface messageService = new MessageService();
-	String contentMessage1 = "Welcome";
+	String contentMessage1 = "Hello";
 	String contentMessage2 = "Hi";
-	String fileName = "Anime";
-	String filePath = "anime.jpg";
+	String fileName = "Avatar";
+	String filePath = "avatar.mp4";
 
 	@BeforeEach
 	void setUp() throws Exception {
 		dataStorage = DataStorage.getData();
-		userService.createNewUser("Son", "Goku", "songoku", "123456789", "Male", "11031999");
-		userService.createNewUser("Uzimaki", "Naruto", "naruto", "999999999", "Male", "13031999");
-		userService.createNewUser("Dragon.D", "Luffy", "luffy", "000000000", "Female", "09081999");
+		userService.createNewUser("Thi", "Nguyen", "thinguyen", "123456789", "Female", "24032000");
+		userService.createNewUser("Vu", "Pham", "vupham", "999999999", "Male", "13031999");
+		userService.createNewUser("Bo", "Tran", "bobungbu", "000000000", "Female", "09081999");
 		groupService.createGroup(GroupType.PRIVATE, "user0");
 		groupService.createGroup(GroupType.PUBLIC, "user0");
 		groupService.createGroup(GroupType.PRIVATE, "user1");
@@ -46,28 +46,28 @@ class MessageServiceTest {
 	public void sendMessageToGroupTest() {
 		messageService.sendMessageToGroup("user1", "group0", contentMessage1);
 		List<Message> messageList = dataStorage.getMessageList();
-		assertEquals("Welcome", messageList.get(messageList.size() - 1).getContent());
+		assertEquals("Hello", messageList.get(messageList.size() - 1).getContent());
 	}
 
 	@Test
 	public void sendMessageToUserTest() {
 		messageService.sendMessageToUser("user1", "user0", contentMessage1);
 		List<Message> messageList = dataStorage.getMessageList();
-		assertEquals("Welcome", messageList.get(messageList.size() - 1).getContent());
+		assertEquals("Hello", messageList.get(messageList.size() - 1).getContent());
 	}
 
 	@Test
 	public void sendFileToUserTest() {
 		messageService.sendFileToUser(fileName, filePath, "user0", "user1");
 		List<File> fileList = dataStorage.getFileList();
-		assertEquals("Anime", fileList.get(fileList.size() - 1).getFileName());
+		assertEquals("Avatar", fileList.get(fileList.size() - 1).getFileName());
 	}
 
 	@Test
 	public void sendFileToGroupTest() {
 		messageService.sendFileToGroup(fileName, filePath, "user1", "group0");
 		List<File> fileList = dataStorage.getFileList();
-		assertEquals("Anime", fileList.get(fileList.size() - 1).getFileName());
+		assertEquals("Avatar", fileList.get(fileList.size() - 1).getFileName());
 	}
 
 	@Test

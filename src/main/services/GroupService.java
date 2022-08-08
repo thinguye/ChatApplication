@@ -8,7 +8,7 @@ import main.repositories.interfaces.RepositoryInterface;
 import main.services.interfaces.GroupServiceInterface;
 import main.services.interfaces.UserServiceInterface;
 
-public class GroupService implements GroupServiceInterface{
+public class GroupService implements GroupServiceInterface {
 	RepositoryInterface repositoryInterface;
 	UserServiceInterface userServiceInterface;
 
@@ -46,7 +46,7 @@ public class GroupService implements GroupServiceInterface{
 				group.addMember(inviteeUser);
 				return true;
 			}
-		} else if (checkMemberGroup(inviterId, groupId)) {
+		} else if (checkMemberGroup(inviterId, groupId) && !checkMemberGroup(inviteeId, groupId)) {
 			group.addMember(inviteeUser);
 			return true;
 		}
@@ -70,29 +70,21 @@ public class GroupService implements GroupServiceInterface{
 		if (group != null) {
 			if (group.getAdminList().contains(admin)) {
 				return true;
-			} else {
-				return false;
 			}
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	@Override
 	public boolean checkMemberGroup(String userId, String groupId) {
 		Group group = getGroupByGroupId(groupId);
 		User user = userServiceInterface.getUserByUserId(userId);
-		if (group != null) {
-			if (group.getMemberList().contains(user)) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
+		if (group != null && group.getMemberList().contains(user)) {
+			return true;
 		}
+		return false;
 	}
-	
+
 	@Override
 	public boolean leaveGroup(String userId, String groupId) {
 		User user = userServiceInterface.getUserByUserId(userId);
